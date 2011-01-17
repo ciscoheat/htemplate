@@ -50,8 +50,6 @@
 	};
 
     var template = new htemplate.Template(TEMPLATE);
-#if php
-    php.Lib.print(template.execute(h));
-#end
+    trace(template.execute(h));
   }
 }

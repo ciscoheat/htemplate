@@ -1,4 +1,4 @@
-package erazor.hscript;   
+package htemplate.hscript;   
 
 import hscript.Expr;
 import hscript.Interp;

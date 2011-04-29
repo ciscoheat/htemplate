@@ -1,4 +1,4 @@
-package htemplate.hscript;   
+package erazor.hscript;   
 
 import hscript.Expr;
 import hscript.Interp;
@@ -11,16 +11,17 @@ class EnhancedInterp extends Interp
 	static var re = ~/^[^0-9]+(\d+)/;
 #end
 	override function call( o : Dynamic, f : Dynamic, args : Array<Dynamic> ) : Dynamic {
-#if (php || js)
+#if php
 		while (true)
 		{
 			try
 			{
 				return Reflect.callMethod(o,f,args);
-			} catch (e : Dynamic) {
-				var s = Std.string(e);
+			} catch (e : String) {
+				if (e.substr(0, 16) != "Missing argument")
+					php.Lib.rethrow(e);
 				var expected = args.length + 1;
-				if (re.match(s))
+				if (re.match(e))
 					expected = Std.parseInt(re.matched(1));
 				if (expected > 15) // guard value
 					throw "invalid number of arguments";
@@ -63,14 +64,14 @@ class EnhancedInterp extends Interp
 #if php
 	override public function expr( e : Expr ) : Dynamic {
 		switch( e ) {
-		case EFunction(params,fexpr,name):
+		case EFunction(params,fexpr,name,ret):
 			var capturedLocals = duplicate(locals);
 			var me = this;
 			var f = function(args:Array<Dynamic>) {
 				var old = me.locals;
 				me.locals = me.duplicate(capturedLocals);
 				for( i in 0...params.length )
-					me.locals.set(params[i],{ r : args[i] });
+					me.locals.set(params[i].name,{ r : args[i] });
 				var r = null;
 				try {
 					r = me.exprReturn(fexpr);
